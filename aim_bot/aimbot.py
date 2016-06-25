@@ -25,7 +25,7 @@ class Aimbot:
             if not file_name.startswith('_') and file_name.endswith('.py'):
                 module_name = file_name.strip('.py')
                 self.loaded_visors.append(import_module(self.visor_dir + '.' + module_name))
-                print("Loading Tactical Visor: [{}]".format(file_name))
+                print("Tactical Visor Activated: [{}]".format(file_name))
                 visor_count += 1
         print("You have {} Tactical Visors activated.".format(visor_count))
 
