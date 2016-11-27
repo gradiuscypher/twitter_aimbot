@@ -1,5 +1,8 @@
+#!/usr/bin/env python
+
 import twitter
 import configparser
+from sys import argv
 from os import listdir
 from importlib import import_module
 
@@ -49,3 +52,9 @@ class Aimbot:
                 log_file = open("event_dump.log", 'a')
                 log_file.write(message_string + "\n")
                 log_file.close()
+
+if __name__ == "__main__":
+    if len(argv) == 2:
+        ab = Aimbot(argv[1])
+    else:
+        print("Command format:\n./aimbot.py [CONFIG]")
