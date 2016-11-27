@@ -56,5 +56,6 @@ class Aimbot:
 if __name__ == "__main__":
     if len(argv) == 2:
         ab = Aimbot(argv[1])
+        ab.visor_loop()
     else:
         print("Command format:\n./aimbot.py [CONFIG]")
