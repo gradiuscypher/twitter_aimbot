@@ -13,6 +13,7 @@ class Aimbot:
         consumer_secret = config.get("Twitter", "consumer_secret")
         access_token = config.get("Twitter", "access_token")
         access_secret = config.get("Twitter", "access_secret")
+        self.debug = config.getboolean("Settings", "debug")
         self.auth = twitter.OAuth(consumer_key=consumer_key, consumer_secret=consumer_secret, token=access_token,
                                   token_secret=access_secret)
         self.loaded_visors = []
@@ -23,7 +24,7 @@ class Aimbot:
 
         for file_name in listdir(self.visor_dir):
             if not file_name.startswith('_') and file_name.endswith('.py'):
-                module_name = file_name.strip('.py')
+                module_name = file_name.replace('.py', '')
                 self.loaded_visors.append(import_module(self.visor_dir + '.' + module_name))
                 print("Tactical Visor Activated: [{}]".format(file_name))
                 visor_count += 1
@@ -43,3 +44,9 @@ class Aimbot:
         for message in stream.user():
             if 'event' in message:
                 self.evaluate_target(message)
+            if self.debug:
+                message_string = str(message)
+                log_file = open("event_dump.log", 'a')
+                log_file.write(message_string + "\n")
+                print(message_string)
+                log_file.close()

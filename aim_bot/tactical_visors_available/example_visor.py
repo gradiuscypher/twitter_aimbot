@@ -1,4 +1,5 @@
 # This is an example Visor. Visors are meant to evaluate events and return True or False so that actions can be taken.
+# DEPRECATED: See note at bottom.
 name = 'example_visor.py'
 """
 {'created_at': 'Sat Jun 25 06:22:47 +0000 2016',
@@ -161,4 +162,6 @@ def activate(event_message):
     followers = event_message['source']['followers_count']
     bio = event_message['source']['description']
     print("Event type: {} | Source: {} | Followers: {} | Bio: {}".format(event_type, source, followers, bio))
+    # DEPRECATED: Each visor will perform its own actions. For visors that require shared input and output, a DB will
+    # be established.
     return True
