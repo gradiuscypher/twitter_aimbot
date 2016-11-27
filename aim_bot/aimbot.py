@@ -2,6 +2,7 @@
 
 import twitter
 import configparser
+import json
 from sys import argv
 from os import listdir
 from importlib import import_module
@@ -48,7 +49,7 @@ class Aimbot:
             if 'event' in message:
                 self.evaluate_target(message)
             if self.debug:
-                message_string = str(message)
+                message_string = json.dumps(message)
                 log_file = open("event_dump.log", 'a')
                 log_file.write(message_string + "\n")
                 log_file.close()
