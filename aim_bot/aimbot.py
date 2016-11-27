@@ -48,5 +48,4 @@ class Aimbot:
                 message_string = str(message)
                 log_file = open("event_dump.log", 'a')
                 log_file.write(message_string + "\n")
-                print(message_string)
                 log_file.close()
