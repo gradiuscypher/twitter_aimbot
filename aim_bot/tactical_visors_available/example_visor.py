@@ -1,5 +1,6 @@
-# This is an example Visor. Visors are meant to evaluate events and return True or False so that actions can be taken.
-# DEPRECATED: See note at bottom.
+from pprint import pprint
+
+
 name = 'example_visor.py'
 """
 {'created_at': 'Sat Jun 25 06:22:47 +0000 2016',
@@ -157,11 +158,24 @@ name = 'example_visor.py'
 
 
 def activate(event_message):
-    event_type = event_message['event']
-    source = event_message['source']['name']
-    followers = event_message['source']['followers_count']
-    bio = event_message['source']['description']
-    print("Event type: {} | Source: {} | Followers: {} | Bio: {}".format(event_type, source, followers, bio))
-    # DEPRECATED: Each visor will perform its own actions. For visors that require shared input and output, a DB will
-    # be established.
-    return True
+    if "user" in event_message.keys():
+        print("UserEvent")
+        pprint(event_message)
+
+    if "event" in event_message.keys():
+        print("EventEvent")
+        pprint(event_message)
+
+    if "entities" in event_message.keys():
+        print("EntitiesEvent")
+        pprint(event_message['entities'])
+        pprint(event_message['entities'].keys())
+        if "urls" in event_message['entities'].keys():
+            print("URLEvent")
+            # pprint(event_message['entities']['urls'])
+            for url in event_message['entities']['urls']:
+                pprint(url['expanded_url'])
+
+    else:
+        print("NotEstablishedEvent")
+        pprint(event_message)

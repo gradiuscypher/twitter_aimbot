@@ -2,7 +2,7 @@
 .idea/
 venv3/
 *.conf
-tactical_visors_active/*
+aim_bot/tactical_visors_active/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

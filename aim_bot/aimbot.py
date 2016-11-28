@@ -36,9 +36,7 @@ class Aimbot:
 
     def evaluate_target(self, event_message):
         for visor in self.loaded_visors:
-            if visor.activate(event_message):
-                # print("{} came back true!".format(visor.name))
-                pass
+            visor.activate(event_message)
 
     def visor_loop(self):
         self.load_visors()
