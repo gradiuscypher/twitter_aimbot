@@ -2,6 +2,7 @@
 
 import json
 import configparser
+import twitter
 from sys import argv
 from os import listdir
 from importlib import import_module
@@ -10,10 +11,17 @@ from importlib import import_module
 class ReplayLogs:
 
     def __init__(self, config_file):
-        config = configparser.RawConfigParser()
-        config.read(config_file)
+        self.config = configparser.RawConfigParser()
+        self.config.read(config_file)
         self.loaded_visors = []
         self.visor_dir = 'tactical_visors_active'
+        consumer_key = self.config.get("Twitter", "consumer_key")
+        consumer_secret = self.config.get("Twitter", "consumer_secret")
+        access_token = self.config.get("Twitter", "access_token")
+        access_secret = self.config.get("Twitter", "access_secret")
+        self.auth = twitter.OAuth(consumer_key=consumer_key, consumer_secret=consumer_secret, token=access_token,
+                                  token_secret=access_secret)
+        self.t_client = twitter.Twitter(auth=self.auth)
 
     def load_visors(self):
         visor_count = 0
@@ -28,7 +36,7 @@ class ReplayLogs:
 
     def evaluate_target(self, event_message):
         for visor in self.loaded_visors:
-            visor.activate(event_message)
+            visor.activate(event_message, self.config, self.t_client)
 
     def replay_logs(self, logfile):
         self.load_visors()

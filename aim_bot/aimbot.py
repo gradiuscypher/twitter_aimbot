@@ -11,15 +11,16 @@ from importlib import import_module
 class Aimbot:
 
     def __init__(self, config_file):
-        config = configparser.RawConfigParser()
-        config.read(config_file)
-        consumer_key = config.get("Twitter", "consumer_key")
-        consumer_secret = config.get("Twitter", "consumer_secret")
-        access_token = config.get("Twitter", "access_token")
-        access_secret = config.get("Twitter", "access_secret")
-        self.debug = config.getboolean("Settings", "debug")
+        self.config = configparser.RawConfigParser()
+        self.config.read(config_file)
+        consumer_key = self.config.get("Twitter", "consumer_key")
+        consumer_secret = self.config.get("Twitter", "consumer_secret")
+        access_token = self.config.get("Twitter", "access_token")
+        access_secret = self.config.get("Twitter", "access_secret")
+        self.debug = self.config.getboolean("Settings", "debug")
         self.auth = twitter.OAuth(consumer_key=consumer_key, consumer_secret=consumer_secret, token=access_token,
                                   token_secret=access_secret)
+        self.t_client = twitter.Twitter(auth=self.auth)
         self.loaded_visors = []
         self.visor_dir = 'tactical_visors_active'
 
@@ -36,7 +37,7 @@ class Aimbot:
 
     def evaluate_target(self, event_message):
         for visor in self.loaded_visors:
-            visor.activate(event_message)
+            visor.activate(event_message, self.config, self.t_client)
 
     def visor_loop(self):
         self.load_visors()
@@ -44,8 +45,8 @@ class Aimbot:
         stream = twitter.stream.TwitterStream(auth=self.auth, domain='userstream.twitter.com')
 
         for message in stream.user():
-            if 'event' in message:
-                self.evaluate_target(message)
+            self.evaluate_target(message)
+
             if self.debug:
                 message_string = json.dumps(message)
                 log_file = open("event_dump.log", 'a')
