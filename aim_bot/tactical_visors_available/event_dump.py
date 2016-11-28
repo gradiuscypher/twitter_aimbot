@@ -2,7 +2,7 @@
 name = 'event_dump.py'
 
 
-def activate(event_message):
+def activate(event_message, config):
     message_string = str(event_message)
     log_file = open("event_dump.log", 'a')
     log_file.write(message_string + "\n")

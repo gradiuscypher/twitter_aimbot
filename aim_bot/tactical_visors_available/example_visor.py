@@ -157,7 +157,7 @@ name = 'example_visor.py'
 """
 
 
-def activate(event_message):
+def activate(event_message, config, twitter):
     if "user" in event_message.keys():
         print("UserEvent")
         pprint(event_message)
