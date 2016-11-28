@@ -3,6 +3,7 @@
 venv3/
 *.conf
 aim_bot/tactical_visors_active/*
+aim_bot/tactical_visors_available/priv_*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
