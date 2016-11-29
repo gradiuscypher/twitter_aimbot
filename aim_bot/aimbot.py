@@ -3,6 +3,7 @@
 import twitter
 import configparser
 import json
+import traceback
 from sys import argv
 from os import listdir
 from importlib import import_module
@@ -44,13 +45,17 @@ class Aimbot:
 
         stream = twitter.stream.TwitterStream(auth=self.auth, domain='userstream.twitter.com')
 
-        for message in stream.user():
-            if self.debug:
-                message_string = json.dumps(message)
-                log_file = open("event_dump.log", 'a')
-                log_file.write(message_string + "\n")
-                log_file.close()
-            self.evaluate_target(message)
+        try:
+            for message in stream.user():
+                if self.debug:
+                    message_string = json.dumps(message)
+                    log_file = open("event_dump.log", 'a')
+                    log_file.write(message_string + "\n")
+                    log_file.close()
+
+                self.evaluate_target(message)
+        except:
+            print(traceback.format_exc())
 
 if __name__ == "__main__":
     if len(argv) == 2:
