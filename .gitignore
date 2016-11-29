@@ -1,9 +1,10 @@
 # gradius ignores
 .idea/
 venv3/
-*.conf
+logs/
 aim_bot/tactical_visors_active/*
 aim_bot/tactical_visors_available/priv_*
+*.conf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
