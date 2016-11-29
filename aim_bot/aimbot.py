@@ -45,13 +45,12 @@ class Aimbot:
         stream = twitter.stream.TwitterStream(auth=self.auth, domain='userstream.twitter.com')
 
         for message in stream.user():
-            self.evaluate_target(message)
-
             if self.debug:
                 message_string = json.dumps(message)
                 log_file = open("event_dump.log", 'a')
                 log_file.write(message_string + "\n")
                 log_file.close()
+            self.evaluate_target(message)
 
 if __name__ == "__main__":
     if len(argv) == 2:
