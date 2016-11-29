@@ -49,7 +49,7 @@ class Aimbot:
             for message in stream.user():
                 if self.debug:
                     message_string = json.dumps(message)
-                    log_file = open("event_dump.log", 'a')
+                    log_file = open("logs/event_dump.log", 'a')
                     log_file.write(message_string + "\n")
                     log_file.close()
 
