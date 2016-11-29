@@ -1,5 +1,6 @@
 [Settings]
 debug = True
+replay = True
 
 [Twitter]
 consumer_key =
