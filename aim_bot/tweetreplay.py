@@ -3,7 +3,7 @@
 import json
 import configparser
 import twitter
-from sys import argv
+import argparse
 from os import listdir
 from importlib import import_module
 
@@ -48,9 +48,10 @@ class ReplayLogs:
 
 
 if __name__ == "__main__":
-    if len(argv) == 3:
-        rl = ReplayLogs(argv[1])
-        rl.replay_logs(argv[2])
+    parser = argparse.ArgumentParser(description="tcpreplay style twitter tool. replays packets into the configured visors.")
+    parser.add_argument('config', help='Config file name')
+    parser.add_argument('logfile', help='Logfile to replay from')
+    opts = parser.parse_args()
 
-    else:
-        print("./replaylogs.py [CONFIG] [LOGFILE]")
+    rl = ReplayLogs(opts.config)
+    rl.replay_logs(opts.logfile)
