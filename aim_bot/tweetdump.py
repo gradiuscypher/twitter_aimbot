@@ -6,6 +6,7 @@ import pprint
 import argparse
 import requests
 import traceback
+from datetime import timezone
 
 
 class StreamTweets(tweepy.StreamListener):
@@ -25,6 +26,8 @@ class StreamTweets(tweepy.StreamListener):
                 fields = []
                 embed_blob['title'] = "@{}".format(status.user.screen_name)
                 embed_blob['thumbnail'] = {"url": status.user.profile_image_url_https}
+                tweet_time = status.created_at.replace(tzinfo=timezone.utc).astimezone(tz=None)
+                fields.append({"name": "Timestamp", "value": str(tweet_time)})
                 fields.append({"name": "Status", "value": status.text})
 
                 if 'media' in status.entities:
