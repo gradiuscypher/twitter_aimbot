@@ -6,14 +6,18 @@ import pprint
 import argparse
 import requests
 import traceback
-from datetime import timezone
+import elasticsearch
+import json
+from datetime import timezone, datetime
 
 
 class StreamTweets(tweepy.StreamListener):
-    def __init__(self, webhook, debug):
+    def __init__(self, webhook, debug, elastic_index):
         super().__init__()
         self.webhook = webhook
         self.debug = debug
+        self.elastic_index = elastic_index
+        self.es = elasticsearch.Elasticsearch()
 
     def on_status(self, status):
         if self.debug:
@@ -48,19 +52,17 @@ class StreamTweets(tweepy.StreamListener):
 
             except:
                 print(traceback.format_exc())
+
+        if self.elastic_index is not None:
+            try:
+                status_obj = status._json
+                status_obj['timestamp'] = datetime.utcnow()
+                self.es.index(index="tweets", doc_type="tweet", body=status_obj)
+            except:
+                print(traceback.format_exc())
+
         else:
             pprint.pprint(repr(status))
-
-
-def stream_twitter(username_list, webhook, debug):
-    userid_list = []
-
-    for username in username_list:
-        userid_list.append(str(api.get_user(username).id))
-
-    tweet_listener = StreamTweets(webhook, debug)
-    tweet_stream = tweepy.Stream(auth=api.auth, listener=tweet_listener)
-    tweet_stream.filter(userid_list)
 
 
 def dump_twitter(screen_name, count=100, include_rts=0):
@@ -71,16 +73,48 @@ def dump_twitter(screen_name, count=100, include_rts=0):
     pass
 
 
+def setup_elastic_index():
+    elastic = elasticsearch.Elasticsearch()
+
+    try:
+        mapping = {
+            "tweet": {
+                "properties": {
+                    "timestamp": {"type": "date"},
+                }
+            }
+        }
+
+        elastic.indices.create("tweets")
+        elastic.indices.put_mapping(index="tweets", doc_type="tweet", body=mapping)
+
+    except:
+        print(traceback.format_exc())
+
+
+def stream_twitter(username_list, webhook, debug, elastic):
+    userid_list = []
+
+    for username in username_list:
+        userid_list.append(str(api.get_user(username).id))
+
+    tweet_listener = StreamTweets(webhook, debug, elastic)
+    tweet_stream = tweepy.Stream(auth=api.auth, listener=tweet_listener)
+    tweet_stream.filter(userid_list)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="tcpdump style tool for twitter. can stream tweets or dump profiles")
     parser.add_argument('config', help='Config file name')
     parser.add_argument('--userlist', help="List of target user names", nargs='+', required=True)
     parser.add_argument('--dump', help='Dump a full twitter profile.', action='store_true')
-    parser.add_argument('--stream', help='Dump a full twitter profile.', action='store_true')
+    parser.add_argument('--stream', help='Stream tweets as they come in to stdout or other destinations', action='store_true')
     parser.add_argument('--retweets', help='Include retweets in a dump', action='store_true')
     parser.add_argument('--count', help='Number of tweets to pull down when dumping')
     parser.add_argument('--webhook', help='Webhook to dump messages to')
+    parser.add_argument('--elastic', help='Save tweets to ElasticSearch index', action="store_true")
     parser.add_argument('--debug', help="Print lots of extra stuff for debugging", action='store_true')
+    parser.add_argument('--buildindex', help="Build the ElasticSearch index and mapping", action='store_true')
     opts = parser.parse_args()
 
     config = configparser.RawConfigParser()
@@ -94,8 +128,11 @@ if __name__ == "__main__":
     auth.set_access_token(access_token, access_secret)
     api = tweepy.API(auth)
 
+    if opts.buildindex:
+        setup_elastic_index()
+
     if opts.stream:
-        stream_twitter(opts.userlist, webhook=opts.webhook, debug=opts.debug)
+        stream_twitter(opts.userlist, webhook=opts.webhook, debug=opts.debug, elastic=opts.elastic)
 
     # TODO: Re-implement with Tweepy and validate dump limit
     # if opts.dump:
