@@ -12,12 +12,16 @@ from datetime import timezone, datetime
 
 
 class StreamTweets(tweepy.StreamListener):
-    def __init__(self, webhook, debug, elastic_index):
+    def __init__(self, webhook, debug, elastic_index, es_host_list):
         super().__init__()
         self.webhook = webhook
         self.debug = debug
         self.elastic_index = elastic_index
-        self.es = elasticsearch.Elasticsearch()
+
+        if len(es_host_list) > 0:
+            self.es = elasticsearch.Elasticsearch(es_host_list)
+        else:
+            self.es = elasticsearch.Elasticsearch()
 
     def on_status(self, status):
         if self.debug:
@@ -73,8 +77,11 @@ def dump_twitter(screen_name, count=100, include_rts=0):
     pass
 
 
-def setup_elastic_index():
-    elastic = elasticsearch.Elasticsearch()
+def setup_elastic_index(es_host_list):
+    if len(es_host_list) > 0:
+        elastic = elasticsearch.Elasticsearch(es_host_list)
+    else:
+        elastic = elasticsearch.Elasticsearch()
 
     try:
         mapping = {
@@ -92,14 +99,14 @@ def setup_elastic_index():
         print(traceback.format_exc())
 
 
-def stream_twitter(username_list, webhook, debug, elastic):
+def stream_twitter(username_list, webhook, debug, elastic, elastic_hosts):
     userid_list = []
 
     for username in username_list:
         userid_list.append(str(api.get_user(username).id))
 
-    tweet_listener = StreamTweets(webhook, debug, elastic)
-    tweet_stream = tweepy.Stream(auth=api.auth, listener=tweet_listener)
+    tweet_listener = StreamTweets(webhook, debug, elastic, elastic_hosts)
+    tweet_stream = tweepy.Stream(auth=api.auth, listener=tweet_listener, es_host_list=elastic_hosts)
     tweet_stream.filter(userid_list)
 
 
@@ -123,16 +130,18 @@ if __name__ == "__main__":
     consumer_secret = config.get("Twitter", "consumer_secret")
     access_token = config.get("Twitter", "access_token")
     access_secret = config.get("Twitter", "access_secret")
+    es_host_list = json.loads(config.get("Elastic", "host_list"))
 
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_secret)
     api = tweepy.API(auth)
 
     if opts.buildindex:
-        setup_elastic_index()
+        setup_elastic_index(es_host_list)
 
     if opts.stream:
-        stream_twitter(opts.userlist, webhook=opts.webhook, debug=opts.debug, elastic=opts.elastic)
+        stream_twitter(opts.userlist, webhook=opts.webhook, debug=opts.debug, elastic=opts.elastic,
+                       elastic_hosts=es_host_list)
 
     # TODO: Re-implement with Tweepy and validate dump limit
     # if opts.dump:
